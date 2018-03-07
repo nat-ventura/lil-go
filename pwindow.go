@@ -2,6 +2,7 @@ package main
 
 import (
 	"image"
+	"math"
 	"math/rand"
 	"os"
 	"time"
@@ -50,10 +51,12 @@ func run() {
 	}
 
 	var (
-		camPos   = pixel.ZV
-		camSpeed = 500.0
-		trees    []*pixel.Sprite
-		matrices []pixel.Matrix
+		camPos       = pixel.ZV
+		camSpeed     = 500.0
+		camZoom      = 1.0
+		camZoomSpeed = 1.2
+		trees        []*pixel.Sprite
+		matrices     []pixel.Matrix
 	)
 
 	last := time.Now()
@@ -62,7 +65,7 @@ func run() {
 		dt := time.Since(last).Seconds()
 		last = time.Now()
 
-		cam := pixel.IM.Moved(win.Bounds().Center().Sub(camPos))
+		cam := pixel.IM.Scaled(camPos, camZoom).Moved(win.Bounds().Center().Sub(camPos))
 		win.SetMatrix(cam)
 
 		if win.JustPressed(pixelgl.MouseButtonLeft) {
@@ -84,6 +87,8 @@ func run() {
 		if win.Pressed(pixelgl.KeyUp) {
 			camPos.Y += camSpeed * dt
 		}
+
+		camZoom *= math.Pow(camZoomSpeed, win.MouseScroll().Y)
 
 		win.Clear(colornames.Whitesmoke)
 
