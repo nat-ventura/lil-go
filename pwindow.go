@@ -50,15 +50,39 @@ func run() {
 	}
 
 	var (
+		camPos   = pixel.ZV
+		camSpeed = 500.0
 		trees    []*pixel.Sprite
 		matrices []pixel.Matrix
 	)
 
+	last := time.Now()
+
 	for !win.Closed() {
+		dt := time.Since(last).Seconds()
+		last = time.Now()
+
+		cam := pixel.IM.Moved(win.Bounds().Center().Sub(camPos))
+		win.SetMatrix(cam)
+
 		if win.JustPressed(pixelgl.MouseButtonLeft) {
 			tree := pixel.NewSprite(spritesheet, treesFrames[rand.Intn(len(treesFrames))])
 			trees = append(trees, tree)
-			matrices = append(matrices, pixel.IM.Scaled(pixel.ZV, 4).Moved(win.MousePosition()))
+			mouse := cam.Unproject(win.MousePosition())
+			matrices = append(matrices, pixel.IM.Scaled(pixel.ZV, 4).Moved(mouse))
+		}
+
+		if win.Pressed(pixelgl.KeyLeft) {
+			camPos.X -= camSpeed * dt
+		}
+		if win.Pressed(pixelgl.KeyRight) {
+			camPos.X += camSpeed * dt
+		}
+		if win.Pressed(pixelgl.KeyDown) {
+			camPos.Y -= camSpeed * dt
+		}
+		if win.Pressed(pixelgl.KeyUp) {
+			camPos.Y += camSpeed * dt
 		}
 
 		win.Clear(colornames.Whitesmoke)
@@ -79,7 +103,6 @@ func run() {
 
 	angle := 0.0
 
-	last := time.Now()
 	for !win.Closed() {
 		dt := time.Since(last).Seconds()
 		last = time.Now()
